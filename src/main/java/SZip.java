@@ -42,24 +42,26 @@ public class SZip {
             Node n1 = forest.poll(); //smallest
             Node n2 = forest.poll(); //second smallest
             int weight = n1.getWeight()+n2.getWeight();
-            Node nonLeaf = new Node(weight,n1,n2);
+            Node min = n1.compareTo(n2) < 0 ? n1 : n2;
+            Node max = n1.compareTo(n2) < 0 ? n2 : n1;
+            Node nonLeaf = new Node(weight,min,max);
             forest.add(nonLeaf);
         }
-        buildCode(forest.peek(), "");
-    }
+        buildCode(forest.peek(),forest.peek(), "");
 
-    private String buildCode( Node x, String s) {
+
+    }
+    private void buildCode(Node root, Node x, String s) {
         if (x.isLeaf()) {
             x.code = s;
             codeTable.put(s, x.data);
-            return s;
         }else {
-           s =  buildCode(x.left, s + '0');
-           s =  buildCode(x.right, s + '1');
+            if(x.left !=null)
+               buildCode(root,x.left, s + '0');
+            if(x.right !=null)
+               buildCode(root,x.right, s + '1');
         }
-        return s;
     }
-
     private boolean initFrequencyTabel() {
         try {
             String fileAsText = readFile(file.getAbsolutePath(),encoding);
@@ -94,7 +96,6 @@ public class SZip {
         }
         return s;
     }
-
     public static boolean zip(FileSelect fileDialog){
         try {
             FileOutputStream saveFile = new FileOutputStream(fileDialog.getSelectedFile().getName()+".szip");
@@ -109,7 +110,7 @@ public class SZip {
         }catch (IOException ioe){
             JOptionPane.showMessageDialog(null,"Något io problem"+ioe.getMessage());
         }catch (Exception e ){
-            JOptionPane.showMessageDialog(null,"Något random problem"+e.getMessage());
+            JOptionPane.showMessageDialog(null, "Något random problem" + e.getMessage());
         }
         return false;
     }
@@ -141,15 +142,13 @@ public class SZip {
             System.out.println(bits);
             while(bits != null){
                 bits = zip.findNextCode(bits);
-
-            } 
+            }
             return true;
         }catch(Exception e){
             JOptionPane.showMessageDialog(null,"Could not read file"+e.getMessage());
         }
         return false;
     }
-
     private class Node implements Comparable {
         private int weight;
         private char data;
@@ -182,6 +181,10 @@ public class SZip {
 
         public boolean isLeaf() {
             return left==null && right==null;
+        }
+
+        public char getData() {
+            return data;
         }
     }
 
